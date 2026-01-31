@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VocabMaster - 智能英语生词管理</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        
+        :root {
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --accent: #4cc9f0;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --success: #4caf50;
+            --warning: #ff9800;
+            --danger: #f44336;
+            --gray: #6c757d;
+            --light-gray: #e9ecef;
+        }
+        
+        body {
+            background-color: #f5f7ff;
+            color: var(--dark);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 1.5rem 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border-radius: 0 0 12px 12px;
+            margin-bottom: 2rem;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .logo-icon {
+            font-size: 2rem;
+        }
+        
+        .logo h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+        
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .goal-selector {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            color: white;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        
+        .goal-selector option {
+            color: var(--dark);
+        }
+        
+        .main-dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        @media (max-width: 768px) {
+            .main-dashboard {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .card-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            color: var(--primary);
+            font-size: 1.3rem;
+        }
+        
+        .card-title i {
+            font-size: 1.2rem;
+        }
+        
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--secondary);
+        }
+        
+        .btn-success {
+            background-color: var(--success);
+            color: white;
+        }
+        
+        .btn-warning {
+            background-color: var(--warning);
+            color: white;
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--dark);
+        }
+        
+        .input-group input, .input-group select, .input-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid var(--light-gray);
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+        
+        .input-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .scene-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .scene-tab {
+            padding: 10px 20px;
+            background-color: var(--light-gray);
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .scene-tab.active {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .word-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .word-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid var(--light-gray);
+            transition: background-color 0.2s;
+        }
+        
+        .word-item:hover {
+            background-color: rgba(67, 97, 238, 0.05);
+        }
+        
+        .word-info h4 {
+            margin-bottom: 5px;
+            color: var(--dark);
+        }
+        
+        .word-info p {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+        
+        .word-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .word-action-btn {
+            background: none;
+            border: none;
+            color: var(--gray);
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: color 0.3s;
+        }
+        
+        .word-action-btn:hover {
+            color: var(--primary);
+        }
+        
+        .review-container {
+            background: linear-gradient(135deg, #f8f9ff, #eef1ff);
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .review-word {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: var(--primary);
+        }
+        
+        .review-meaning {
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            color: var(--dark);
+        }
+        
+        .review-example {
+            font-style: italic;
+            margin-bottom: 25px;
+            color: var(--gray);
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 8px;
+            border-left: 4px solid var(--accent);
+        }
+        
+        .review-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .review-btn {
+            padding: 12px 30px;
+            font-size: 1.1rem;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--gray);
+        }
+        
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: var(--light-gray);
+        }
+        
+        .memory-curve {
+            height: 200px;
+            background: white;
+            border-radius: 8px;
+            margin-top: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .curve-line {
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            background: var(--light-gray);
+            top: 50%;
+        }
+        
+        .curve-point {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background-color: var(--primary);
+            border-radius: 50%;
+            transform: translate(-50%, 50%);
+        }
+        
+        .curve-label {
+            position: absolute;
+            font-size: 0.8rem;
+            color: var(--gray);
+            top: 60%;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: var(--gray);
+            font-size: 0.9rem;
+            border-top: 1px solid var(--light-gray);
+        }
+        
+        .progress-bar {
+            height: 8px;
+            background-color: var(--light-gray);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background-color: var(--primary);
+            width: 65%;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+            margin-left: 10px;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+        
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .toggle-slider {
+            background-color: var(--primary);
+        }
+        
+        input:checked + .toggle-slider:before {
+            transform: translateX(26px);
+        }
+        
+        .pronunciation {
+            color: var(--accent);
+            cursor: pointer;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <div class="logo-icon">
+                        <i class="fas fa-book-open"></i>
+                    </div>
+                    <h1>VocabMaster</h1>
+                </div>
+                <div class="user-profile">
+                    <select class="goal-selector">
+                        <option value="general">通用英语</option>
+                        <option value="ielts" selected>雅思备考</option>
+                        <option value="business">商务英语</option>
+                        <option value="daily">日常对话</option>
+                    </select>
+                    <div class="user-avatar">
+                        <i class="fas fa-user-circle" style="font-size: 2rem;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <div class="container">
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="stat-number" id="total-words">1,247</div>
+                <div class="stat-label">总词汇量</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="today-review">24</div>
+                <div class="stat-label">今日复习</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="memory-rate">78%</div>
+                <div class="stat-label">记忆率</div>
+            </div>
+        </div>
+        
+        <div class="main-dashboard">
+            <div class="card">
+                <div class="card-title">
+                    <i class="fas fa-plus-circle"></i>
+                    <h2>添加新单词</h2>
+                </div>
+                
+                <div class="scene-tabs">
+                    <div class="scene-tab active" data-scene="movie">影视</div>
+                    <div class="scene-tab" data-scene="news">新闻</div>
+                    <div class="scene-tab" data-scene="conversation">对话</div>
+                    <div class="scene-tab" data-scene="reading">阅读</div>
+                </div>
+                
+                <form id="add-word-form">
+                    <div class="input-group">
+                        <label for="word">单词 *</label>
+                        <input type="text" id="word" placeholder="输入新单词" required>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="meaning">释义 *</label>
+                        <input type="text" id="meaning" placeholder="输入中文释义" required>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="example">例句/上下文</label>
+                        <textarea id="example" placeholder="输入例句或上下文，帮助记忆"></textarea>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="source">来源 (可选)</label>
+                        <input type="text" id="source" placeholder="如：Friends S01E03, BBC News 2023-10-15">
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> 保存单词
+                    </button>
+                </form>
+            </div>
+            
+            <div class="card">
+                <div class="card-title">
+                    <i class="fas fa-history"></i>
+                    <h2>今日复习</h2>
+                    <div style="margin-left: auto; font-size: 0.9rem; color: var(--gray);">
+                        基于记忆曲线
+                    </div>
+                </div>
+                
+                <div id="review-section">
+                    <div class="review-container">
+                        <div class="review-word" id="review-word">perseverance</div>
+                        <div class="review-meaning" id="review-meaning">n. 坚持不懈，毅力</div>
+                        <div class="review-example" id="review-example">His perseverance in learning English finally paid off when he got a high score on the IELTS exam.</div>
+                        
+                        <div style="margin-top: 20px;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                <span>记忆强度</span>
+                                <span>65%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="review-buttons">
+                            <button class="btn btn-success review-btn" id="remember-btn">
+                                <i class="fas fa-check-circle"></i> 记得
+                            </button>
+                            <button class="btn btn-danger review-btn" id="forget-btn">
+                                <i class="fas fa-times-circle"></i> 忘记
+                            </button>
+                            <button class="btn btn-warning review-btn" id="hard-btn">
+                                <i class="fas fa-question-circle"></i> 困难
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div style="text-align: center; margin-top: 20px;">
+                        <p style="color: var(--gray); font-size: 0.9rem;">
+                            <i class="fas fa-info-circle"></i> 根据你的记忆曲线，今天需要复习 <strong>24</strong> 个单词
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-title">
+                <i class="fas fa-list-ul"></i>
+                <h2>我的词库</h2>
+                <div style="margin-left: auto; display: flex; align-items: center;">
+                    <span style="font-size: 0.9rem; color: var(--gray); margin-right: 10px;">智能排序</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="smart-sort-toggle" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="word-list" id="word-list">
+                <!-- 单词列表将通过JavaScript动态生成 -->
+            </div>
+            
+            <div class="empty-state" id="empty-word-list" style="display: none;">
+                <i class="fas fa-book"></i>
+                <h3>词库为空</h3>
+                <p>添加你的第一个单词开始学习之旅吧！</p>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-title">
+                <i class="fas fa-chart-line"></i>
+                <h2>记忆曲线分析</h2>
+            </div>
+            
+            <p style="margin-bottom: 15px;">基于艾宾浩斯遗忘曲线，系统会智能安排复习时间，提高记忆效率。</p>
+            
+            <div class="memory-curve">
+                <div class="curve-line"></div>
+                <div class="curve-point" style="left: 10%; bottom: 80%;"></div>
+                <div class="curve-point" style="left: 25%; bottom: 50%;"></div>
+                <div class="curve-point" style="left: 45%; bottom: 30%;"></div>
+                <div class="curve-point" style="left: 65%; bottom: 25%;"></div>
+                <div class="curve-point" style="left: 85%; bottom: 22%;"></div>
+                
+                <div class="curve-label" style="left: 10%;">首次学习</div>
+                <div class="curve-label" style="left: 25%;">1天后</div>
+                <div class="curve-label" style="left: 45%;">3天后</div>
+                <div class="curve-label" style="left: 65%;">7天后</div>
+                <div class="curve-label" style="left: 85%;">15天后</div>
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        <div class="container">
+            <p>VocabMaster MVP - 智能英语生词管理系统 | 基于艾宾浩斯记忆曲线优化复习效率</p>
+            <p style="margin-top: 10px; font-size: 0.8rem;">© 2023 产品原型仅供演示使用</p>
+        </div>
+    </footer>
+
+    <script>
+        // 模拟词汇数据
+        const sampleWords = [
+            { id: 1, word: "perseverance", meaning: "n. 坚持不懈，毅力", example: "His perseverance in learning English finally paid off when he got a high score on the IELTS exam.", scene: "reading", addedDate: "2023-10-10", reviewCount: 3, nextReview: "2023-10-25", difficulty: "medium" },
+            { id: 2, word: "ambiguity", meaning: "n. 含糊不清，模棱两可", example: "The ambiguity in the contract led to a misunderstanding between the two parties.", scene: "business", addedDate: "2023-10-12", reviewCount: 2, nextReview: "2023-10-24", difficulty: "hard" },
+            { id: 3, word: "resilient", meaning: "adj. 有弹性的，适应力强的", example: "Children are often more resilient than adults when it comes to learning new languages.", scene: "conversation", addedDate: "2023-10-15", reviewCount: 1, nextReview: "2023-10-23", difficulty: "easy" },
+            { id: 4, word: "mitigate", meaning: "v. 减轻，缓和", example: "Planting trees can help mitigate the effects of climate change.", scene: "news", addedDate: "2023-10-18", reviewCount: 0, nextReview: "2023-10-22", difficulty: "medium" },
+            { id: 5, word: "prolific", meaning: "adj. 多产的，丰富的", example: "Shakespeare was a prolific writer who produced many famous plays.", scene: "movie", addedDate: "2023-10-20", reviewCount: 0, nextReview: "2023-10-21", difficulty: "easy" }
+        ];
+        
+        let words = JSON.parse(localStorage.getItem('vocabmaster_words')) || sampleWords;
+        let currentScene = 'movie';
+        let currentReviewIndex = 0;
+        let reviewWords = [...words].sort((a, b) => new Date(a.nextReview) - new Date(b.nextReview)).slice(0, 5);
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            renderWordList();
+            setupSceneTabs();
+            setupForm();
+            setupReview();
+            updateStats();
+            
+            // 检查是否为空词库
+            if (words.length === 0) {
+                document.getElementById('empty-word-list').style.display = 'block';
+                document.getElementById('word-list').style.display = 'none';
+            }
+        });
+        
+        // 渲染单词列表
+        function renderWordList() {
+            const wordListContainer = document.getElementById('word-list');
+            const emptyState = document.getElementById('empty-word-list');
+            
+            if (words.length === 0) {
+                wordListContainer.innerHTML = '';
+                emptyState.style.display = 'block';
+                wordListContainer.style.display = 'none';
+                return;
+            }
+            
+            emptyState.style.display = 'none';
+            wordListContainer.style.display = 'block';
+            
+            // 根据智能排序开关排序
+            const smartSort = document.getElementById('smart-sort-toggle').checked;
+            let sortedWords = [...words];
+            
+            if (smartSort) {
+                // 智能排序：根据下次复习时间（最近的需要复习的排在前面）和难度
+                sortedWords.sort((a, b) => {
+                    const dateDiff = new Date(a.nextReview) - new Date(b.nextReview);
+                    if (dateDiff !== 0) return dateDiff;
+                    
+                    const difficultyOrder = { 'hard': 0, 'medium': 1, 'easy': 2 };
+                    return difficultyOrder[a.difficulty] - difficultyOrder[b.difficulty];
+                });
+            } else {
+                // 按添加时间排序（最新添加的在前）
+                sortedWords.sort((a, b) => new Date(b.addedDate) - new Date(a.addedDate));
+            }
+            
+            wordListContainer.innerHTML = '';
+            
+            sortedWords.forEach(word => {
+                const sceneIcons = {
+                    'movie': 'fas fa-film',
+                    'news': 'fas fa-newspaper',
+                    'conversation': 'fas fa-comments',
+                    'reading': 'fas fa-book'
+                };
+                
+                const difficultyColors = {
+                    'easy': 'var(--success)',
+                    'medium': 'var(--warning)',
+                    'hard': 'var(--danger)'
+                };
+                
+                const wordElement = document.createElement('div');
+                wordElement.className = 'word-item';
+                wordElement.innerHTML = `
+                    <div class="word-info">
+                        <h4>${word.word} <i class="fas fa-volume-up pronunciation" onclick="playPronunciation('${word.word}')"></i></h4>
+                        <p>${word.meaning}</p>
+                        <div style="display: flex; align-items: center; gap: 10px; margin-top: 8px;">
+                            <span style="font-size: 0.8rem; background: ${difficultyColors[word.difficulty]}; color: white; padding: 2px 8px; border-radius: 10px;">
+                                ${word.difficulty === 'easy' ? '简单' : word.difficulty === 'medium' ? '中等' : '困难'}
+                            </span>
+                            <span style="font-size: 0.8rem; color: var(--gray);">
+                                <i class="${sceneIcons[word.scene]}"></i> ${getSceneName(word.scene)}
+                            </span>
+                            <span style="font-size: 0.8rem; color: var(--gray);">
+                                下次复习: ${formatDate(word.nextReview)}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="word-actions">
+                        <button class="word-action-btn" onclick="editWord(${word.id})">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="word-action-btn" onclick="deleteWord(${word.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+                
+                wordListContainer.appendChild(wordElement);
+            });
+        }
+        
+        // 设置场景标签
+        function setupSceneTabs() {
+            const tabs = document.querySelectorAll('.scene-tab');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    tabs.forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    currentScene = this.getAttribute('data-scene');
+                    
+                    // 更新表单中的场景提示
+                    const sceneName = getSceneName(currentScene);
+                    document.getElementById('source').placeholder = `如：${getSceneExample(currentScene)}`;
+                });
+            });
+        }
+        
+        // 获取场景名称
+        function getSceneName(scene) {
+            const sceneNames = {
+                'movie': '影视',
+                'news': '新闻',
+                'conversation': '对话',
+                'reading': '阅读'
+            };
+            return sceneNames[scene] || '其他';
+        }
+        
+        // 获取场景示例
+        function getSceneExample(scene) {
+            const examples = {
+                'movie': 'Friends S01E03',
+                'news': 'BBC News 2023-10-15',
+                'conversation': '与同事的对话',
+                'reading': '经济学人文章'
+            };
+            return examples[scene] || '来源信息';
+        }
+        
+        // 设置表单提交
+        function setupForm() {
+            const form = document.getElementById('add-word-form');
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const wordInput = document.getElementById('word');
+                const meaningInput = document.getElementById('meaning');
+                const exampleInput = document.getElementById('example');
+                const sourceInput = document.getElementById('source');
+                
+                const newWord = {
+                    id: words.length > 0 ? Math.max(...words.map(w => w.id)) + 1 : 1,
+                    word: wordInput.value.trim(),
+                    meaning: meaningInput.value.trim(),
+                    example: exampleInput.value.trim() || `Example sentence for ${wordInput.value.trim()}`,
+                    scene: currentScene,
+                    source: sourceInput.value.trim() || getSceneExample(currentScene),
+                    addedDate: new Date().toISOString().split('T')[0],
+                    reviewCount: 0,
+                    nextReview: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 明天
+                    difficulty: 'medium'
+                };
+                
+                words.push(newWord);
+                saveWordsToLocalStorage();
+                
+                // 更新UI
+                renderWordList();
+                updateStats();
+                
+                // 重置表单
+                form.reset();
+                document.getElementById('source').placeholder = `如：${getSceneExample(currentScene)}`;
+                
+                // 显示成功消息
+                alert(`单词 "${newWord.word}" 已成功添加！`);
+            });
+        }
+        
+        // 设置复习功能
+        function setupReview() {
+            document.getElementById('remember-btn').addEventListener('click', function() {
+                handleReviewFeedback('remember');
+            });
+            
+            document.getElementById('forget-btn').addEventListener('click', function() {
+                handleReviewFeedback('forget');
+            });
+            
+            document.getElementById('hard-btn').addEventListener('click', function() {
+                handleReviewFeedback('hard');
+            });
+        }
+        
+        // 处理复习反馈
+        function handleReviewFeedback(feedback) {
+            if (reviewWords.length === 0) return;
+            
+            const currentWord = reviewWords[currentReviewIndex];
+            const wordIndex = words.findIndex(w => w.id === currentWord.id);
+            
+            if (wordIndex !== -1) {
+                // 更新复习次数
+                words[wordIndex].reviewCount++;
+                
+                // 根据反馈调整下次复习时间和难度
+                let nextReviewDays = 1;
+                
+                if (feedback === 'remember') {
+                    // 记得：延长复习间隔
+                    nextReviewDays = Math.min(words[wordIndex].reviewCount * 2, 30);
+                    words[wordIndex].difficulty = 'easy';
+                } else if (feedback === 'hard') {
+                    // 困难：稍短间隔
+                    nextReviewDays = Math.max(1, Math.floor(words[wordIndex].reviewCount * 1.5));
+                    words[wordIndex].difficulty = 'medium';
+                } else {
+                    // 忘记：重新开始短间隔
+                    nextReviewDays = 1;
+                    words[wordIndex].difficulty = 'hard';
+                }
+                
+                // 计算下次复习日期
+                const nextReviewDate = new Date();
+                nextReviewDate.setDate(nextReviewDate.getDate() + nextReviewDays);
+                words[wordIndex].nextReview = nextReviewDate.toISOString().split('T')[0];
+                
+                saveWordsToLocalStorage();
+            }
+            
+            // 移动到下一个复习单词
+            currentReviewIndex++;
+            
+            if (currentReviewIndex < reviewWords.length) {
+                // 显示下一个单词
+                showReviewWord(reviewWords[currentReviewIndex]);
+            } else {
+                // 复习完成
+                document.getElementById('review-section').innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-check-circle" style="color: var(--success);"></i>
+                        <h3>今日复习完成！</h3>
+                        <p>太棒了！你已经完成了今天的所有复习任务。</p>
+                        <button class="btn btn-primary" style="margin-top: 20px;" onclick="resetReview()">
+                            <i class="fas fa-redo"></i> 重新开始复习
+                        </button>
+                    </div>
+                `;
+            }
+            
+            updateStats();
+        }
+        
+        // 显示复习单词
+        function showReviewWord(word) {
+            document.getElementById('review-word').textContent = word.word;
+            document.getElementById('review-meaning').textContent = word.meaning;
+            document.getElementById('review-example').textContent = word.example;
+            
+            // 更新进度条
+            const progress = word.difficulty === 'easy' ? 85 : word.difficulty === 'medium' ? 65 : 30;
+            document.querySelector('.progress-fill').style.width = `${progress}%`;
+            document.querySelector('.progress-bar + div span:last-child').textContent = `${progress}%`;
+        }
+        
+        // 重置复习
+        function resetReview() {
+            currentReviewIndex = 0;
+            reviewWords = [...words].sort((a, b) => new Date(a.nextReview) - new Date(b.nextReview)).slice(0, 5);
+            
+            if (reviewWords.length > 0) {
+                document.getElementById('review-section').innerHTML = `
+                    <div class="review-container">
+                        <div class="review-word" id="review-word">${reviewWords[0].word}</div>
+                        <div class="review-meaning" id="review-meaning">${reviewWords[0].meaning}</div>
+                        <div class="review-example" id="review-example">${reviewWords[0].example}</div>
+                        
+                        <div style="margin-top: 20px;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                <span>记忆强度</span>
+                                <span>65%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="review-buttons">
+                            <button class="btn btn-success review-btn" id="remember-btn">
+                                <i class="fas fa-check-circle"></i> 记得
+                            </button>
+                            <button class="btn btn-danger review-btn" id="forget-btn">
+                                <i class="fas fa-times-circle"></i> 忘记
+                            </button>
+                            <button class="btn btn-warning review-btn" id="hard-btn">
+                                <i class="fas fa-question-circle"></i> 困难
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div style="text-align: center; margin-top: 20px;">
+                        <p style="color: var(--gray); font-size: 0.9rem;">
+                            <i class="fas fa-info-circle"></i> 根据你的记忆曲线，今天需要复习 <strong>${reviewWords.length}</strong> 个单词
+                        </p>
+                    </div>
+                `;
+                
+                setupReview();
+            } else {
+                document.getElementById('review-section').innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-check-circle" style="color: var(--success);"></i>
+                        <h3>今日没有需要复习的单词</h3>
+                        <p>继续添加新单词或等待下次复习时间。</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // 更新统计信息
+        function updateStats() {
+            document.getElementById('total-words').textContent = words.length;
+            
+            // 计算今天需要复习的单词
+            const today = new Date().toISOString().split('T')[0];
+            const todayReviewCount = words.filter(word => word.nextReview <= today).length;
+            document.getElementById('today-review').textContent = todayReviewCount;
+            
+            // 计算记忆率（简单模拟）
+            const memoryRate = Math.min(95, 70 + (words.filter(w => w.difficulty === 'easy').length / words.length) * 25);
+            document.getElementById('memory-rate').textContent = `${Math.round(memoryRate)}%`;
+        }
+        
+        // 辅助函数
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const today = new Date();
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            
+            if (date.toDateString() === today.toDateString()) {
+                return '今天';
+            } else if (date.toDateString() === tomorrow.toDateString()) {
+                return '明天';
+            } else {
+                return `${date.getMonth()+1}/${date.getDate()}`;
+            }
+        }
+        
+        function playPronunciation(word) {
+            // 模拟发音功能
+            alert(`播放单词 "${word}" 的发音（实际产品中将集成语音合成API）`);
+        }
+        
+        function editWord(id) {
+            alert(`编辑单词 ID: ${id}（编辑功能将在完整版中实现）`);
+        }
+        
+        function deleteWord(id) {
+            if (confirm('确定要删除这个单词吗？')) {
+                words = words.filter(word => word.id !== id);
+                saveWordsToLocalStorage();
+                renderWordList();
+                updateStats();
+            }
+        }
+        
+        function saveWordsToLocalStorage() {
+            localStorage.setItem('vocabmaster_words', JSON.stringify(words));
+        }
+        
+        // 智能排序切换
+        document.getElementById('smart-sort-toggle').addEventListener('change', renderWordList);
+        
+        // 学习目标切换
+        document.querySelector('.goal-selector').addEventListener('change', function() {
+            const goal = this.value;
+            let message = '';
+            
+            switch(goal) {
+                case 'ielts':
+                    message = '已切换到雅思备考模式，系统将优先推送雅思高频词汇。';
+                    break;
+                case 'business':
+                    message = '已切换到商务英语模式，系统将优先推送商务场景词汇。';
+                    break;
+                case 'daily':
+                    message = '已切换到日常对话模式，系统将优先推送生活实用词汇。';
+                    break;
+                default:
+                    message = '已切换到通用英语模式。';
+            }
+            
+            alert(message);
+        });
+    </script>
+</body>
+</html>
